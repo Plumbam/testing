@@ -4,7 +4,7 @@
 
 ---
 
-## 📌 Общая информация
+## Общая информация
 
 * **Объект тестирования:** Каталог услуг компании CPCIMPEX (`.cart_block`)
 * **URL стенда:** [https://cpcimpex.com](https://cpcimpex.com)
@@ -117,16 +117,4 @@
   * Тест фиксирует дефект внешней ссылки и сохраняет информацию в отчет.
 
 ---
-
-## 🚀 Запуск автотестов
-
-```bash
-# Запуск всех тестов в Chromium
-npx playwright test --project=chromium
-
-# Запуск с визуализацией браузера (Headed mode)
-npx playwright test --headed
-
-# Открытие HTML-отчета
-npx playwright show-report
 ```
