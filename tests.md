@@ -264,3 +264,304 @@ npx playwright show-report
 - [ ] Имена файлов и пути импортов соответствуют конвенции репозитория.
 - [ ] При необходимости набор добавлен в CI‑джобу (smoke/регресс).
 - [ ] Этот `.md` закоммичен рядом со спекой как документация тест‑кейсов.
+
+---
+---
+
+# Автотесты и тест‑кейсы: футер сайта (cpcimpex.com)
+
+| Поле | Значение |
+|------|----------|
+| Модуль | Все страницы → футер (`<footer class="footer">`) |
+| URL | https://cpcimpex.com/ |
+| Инструмент | Playwright (TypeScript), паттерн Page Object |
+| Автор | Денис |
+| Дата создания | 03.11.2026 |
+| Статус | Прогнано: 9 passed, 1 expected fail (известный баг BUG‑F01) |
+
+---
+
+## 1. Тестируемый функционал (описание UI)
+
+1. Логотип **CPCIMPEX.COM** со ссылкой на главную
+2. Колонка **«Фасовка»** — 6 ссылок (фигурный пакет, 3‑х шовный, 4‑х шовный, Doy‑pack, топперы, «Топперы с начинкой под ключ»)
+3. Колонка **«Групповая упаковка»** — 5 ссылок (промо‑наборы LDPE / ПОФ / ПЭТ / в картоне, вырубка платинки)
+4. Колонка **«Другое»** — 8 ссылок (Каталог решений, Интересное об упаковке, Качество, Разработка, Предложения, Сертификаты, О компании, Контакты)
+5. Строка копирайта: *«Copyright © 2026 https://www.cpcimpex.com. Все права защищены…»*
+6. Телефон **+7 (495) 234 0707** (`tel:`) и почта **info@cpcimpex.com** (`mailto:`)
+
+> На странице есть скрытое мегаменю (`section.megamenu`) с теми же ссылками, поэтому все локаторы ограничены областью `footer.footer`.
+
+---
+
+## 2. Предусловия и настройка окружения
+
+Те же, что в разделе формы «Нужна консультация?» (Node.js ≥ 18, `@playwright/test`, `baseURL: 'https://cpcimpex.com'`), **плюс обязательная правка конфига — см. §8.** Без неё сайт отдаёт headless‑браузеру пустую страницу и падают все тесты, в том числе тесты формы.
+
+---
+
+## 3. Тест‑кейсы
+
+**Общее предусловие:** открыта главная страница `https://cpcimpex.com/`, выполнена прокрутка до футера.
+
+| ID | Приоритет | Тип | Заголовок | Шаги | Ожидаемый результат | Авто‑тест |
+|----|-----------|-----|-----------|------|---------------------|-----------|
+| TC‑F01 | P2 | UI | Футер отображается | Прокрутить страницу вниз | Футер виден | test 1 |
+| TC‑F02 | P2 | UI | Логотип | Найти логотип в футере | Логотип виден, ссылка ведёт на `/` | test 2 |
+| TC‑F03 | P2 | UI | Колонка «Фасовка» | Проверить заголовок и ссылки колонки | Заголовок «Фасовка», 6 ссылок | test 3 |
+| TC‑F04 | P2 | UI | Колонка «Групповая упаковка» | Проверить заголовок и ссылки колонки | Заголовок «Групповая упаковка», 5 ссылок | test 4 |
+| TC‑F05 | P2 | UI | Колонка «Другое» | Проверить заголовок и ссылки колонки | Заголовок «Другое», 8 ссылок | test 5 |
+| TC‑F06 | P1 | UI | Телефон | Найти телефон в футере | Виден, `href="tel:+74952340707"` | test 6 |
+| TC‑F07 | P1 | UI | Email | Найти почту в футере | Видна, `href="mailto:info@cpcimpex.com"` | test 7 |
+| TC‑F08 | P3 | Контент | Копирайт | Прочитать строку копирайта | Содержит «Copyright © <текущий год>» и «Все права защищены» | test 8 |
+| TC‑F09 | **P0** | Функциональный | Битые ссылки | Запросить все http‑ссылки футера | Ни одна не отвечает 4xx/5xx | test 9 ❌ **BUG‑F01** |
+| TC‑F10 | P1 | Поведенческий | Переход в «Контакты» | Кликнуть «Контакты» в колонке «Другое» | Открывается `/contacts.html` | test 10 |
+
+---
+
+## 4. Найденные дефекты
+
+### BUG‑F01 — Битая ссылка «Топперы с начинкой под ключ» (404)
+
+| Поле | Значение |
+|------|----------|
+| Серьёзность | Major (ведёт на несуществующую страницу, теряется переход на сайт топперов) |
+| Приоритет | High |
+| Где | Футер → колонка «Фасовка» → «Топперы с начинкой под ключ» (то же в скрытом мегаменю) |
+| Шаги | 1. Открыть https://cpcimpex.com/ <br>2. Прокрутить до футера <br>3. Нажать «Топперы с начинкой под ключ» |
+| Ожидаемый результат | Открывается https://toppers.cpcimpex.com/ |
+| Фактический результат | Открывается `https://cpcimpex.com/https://toppers.cpcimpex.com/` → **404** |
+| Причина (предположительно) | В CMS абсолютный URL записан как относительный, и к нему добавляется адрес сайта |
+| Автотест | test 9 (помечен `test.fail()`; когда баг починят, Playwright сообщит, и пометку нужно снять) |
+
+---
+
+## 5. Структура файлов в репозитории
+
+```
+tests/
+├── pages/
+│   └── cpcimpexFooter.page.ts     # Page Object
+├── specs/
+│   └── cpcimpexFooter.spec.ts     # Спека (10 тестов)
+└── playwright.config.ts           # общий с формой консультации, см. §8
+```
+
+---
+
+## 6. Page Object — `cpcimpexFooter.page.ts`
+
+```ts
+import { Page, Locator } from '@playwright/test';
+
+export class CpcimpexFooterPage {
+  private readonly page: Page;
+
+  // --- Локаторы (ленивые: резолвятся в момент действия) ---
+  readonly footer: Locator;
+  readonly logoLink: Locator;
+  readonly logoImage: Locator;
+
+  // Колонки меню
+  readonly fasovkaColumn: Locator;
+  readonly promoColumn: Locator;
+  readonly otherColumn: Locator;
+
+  // Нижняя строка
+  readonly copyright: Locator;
+  readonly phoneLink: Locator;
+  readonly emailLink: Locator;
+  readonly contactsLink: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+
+    // На странице есть скрытое мегаменю с теми же ссылками,
+    // поэтому все локаторы ищем строго внутри <footer>.
+    this.footer = page.locator('footer.footer');
+
+    this.logoLink = this.footer.locator('.logo_block a');
+    this.logoImage = this.footer.getByRole('img', { name: 'CPCIMPEX.COM' });
+
+    this.fasovkaColumn = this.footer.locator('.fasovka');
+    this.promoColumn = this.footer.locator('.promo');
+    this.otherColumn = this.footer.locator('.other');
+
+    this.copyright = this.footer.locator('.copyright');
+    this.phoneLink = this.footer.getByRole('link', { name: '+7 (495) 234 0707' });
+    this.emailLink = this.footer.getByRole('link', { name: 'info@cpcimpex.com' });
+    this.contactsLink = this.otherColumn.getByRole('link', { name: 'Контакты', exact: true });
+  }
+
+  // Открыть главную (baseURL = https://cpcimpex.com) и прокрутить к футеру
+  async goto(): Promise<void> {
+    await this.page.goto('/');
+    await this.footer.scrollIntoViewIfNeeded();
+  }
+
+  // Заголовок колонки (на сайте это <p class="h3">, а не <h3>)
+  columnTitle(column: Locator): Locator {
+    return column.locator('p.h3');
+  }
+
+  // Ссылки колонки
+  columnLinks(column: Locator): Locator {
+    return column.getByRole('link');
+  }
+
+  // Все http-ссылки футера (без tel: и mailto:)
+  async httpLinks(): Promise<string[]> {
+    const hrefs = await this.footer
+      .locator('a[href]')
+      .evaluateAll((links) => links.map((a) => (a as HTMLAnchorElement).href));
+    return [...new Set(hrefs.filter((h) => h.startsWith('http')))];
+  }
+
+  // Коды ответа по всем ссылкам сразу (параллельно). Запросы идут из браузера:
+  // тот же домен, без CORS и с теми же заголовками, что у страницы.
+  async brokenLinks(): Promise<string[]> {
+    const urls = await this.httpLinks();
+    return this.page.evaluate(async (list) => {
+      const results = await Promise.all(
+        list.map(async (u) => {
+          try {
+            const res = await fetch(u, { redirect: 'follow' });
+            return res.status >= 400 ? `${res.status} ${u}` : null;
+          } catch {
+            return `ERR ${u}`;
+          }
+        })
+      );
+      return results.filter((r): r is string => r !== null);
+    }, urls);
+  }
+}
+```
+
+---
+
+## 7. Спека — `cpcimpexFooter.spec.ts`
+
+```ts
+import { test, expect, Page } from '@playwright/test';
+import { CpcimpexFooterPage } from '../pages/cpcimpexFooter.page';
+
+test.describe('CPC ImpEx — футер сайта (одно окно браузера)', () => {
+  let page: Page;
+  let po: CpcimpexFooterPage;
+
+  test.beforeAll(async ({ browser }) => {
+    page = await browser.newPage();
+    po = new CpcimpexFooterPage(page);
+    await po.goto();
+  });
+
+  test.afterAll(async () => {
+    await page.close();
+  });
+
+  test('1. Футер отображается', async () => {
+    await expect(po.footer).toBeVisible();
+  });
+
+  test('2. Логотип виден и ведёт на главную', async () => {
+    await expect(po.logoImage).toBeVisible();
+    await expect(po.logoLink).toHaveAttribute('href', '/');
+  });
+
+  test('3. Колонка "Фасовка": заголовок и 6 ссылок', async () => {
+    await expect(po.columnTitle(po.fasovkaColumn)).toHaveText('Фасовка');
+    await expect(po.columnLinks(po.fasovkaColumn)).toHaveCount(6);
+  });
+
+  test('4. Колонка "Групповая упаковка": заголовок и 5 ссылок', async () => {
+    await expect(po.columnTitle(po.promoColumn)).toHaveText('Групповая упаковка');
+    await expect(po.columnLinks(po.promoColumn)).toHaveCount(5);
+  });
+
+  test('5. Колонка "Другое": заголовок и 8 ссылок', async () => {
+    await expect(po.columnTitle(po.otherColumn)).toHaveText('Другое');
+    await expect(po.columnLinks(po.otherColumn)).toHaveCount(8);
+  });
+
+  test('6. Телефон — кликабельная ссылка tel:', async () => {
+    await expect(po.phoneLink).toBeVisible();
+    await expect(po.phoneLink).toHaveAttribute('href', 'tel:+74952340707');
+  });
+
+  test('7. Email — кликабельная ссылка mailto:', async () => {
+    await expect(po.emailLink).toBeVisible();
+    await expect(po.emailLink).toHaveAttribute('href', 'mailto:info@cpcimpex.com');
+  });
+
+  test('8. Копирайт с текущим годом', async () => {
+    const year = new Date().getFullYear();
+    await expect(po.copyright).toContainText(`Copyright © ${year}`);
+    await expect(po.copyright).toContainText('Все права защищены');
+  });
+
+  // Известный баг BUG-F01: ссылка «Топперы с начинкой под ключ» отдаёт 404.
+  // test.fail() — тест ожидаемо падает. Когда баг починят, Playwright
+  // сообщит об этом, и пометку нужно будет убрать.
+  test('9. Все ссылки футера открываются (нет 4xx/5xx)', async () => {
+    test.fail(true, 'BUG-F01: битая ссылка «Топперы с начинкой под ключ» → 404');
+    test.setTimeout(60_000);
+    const broken = await po.brokenLinks();
+    expect(broken, `Битые ссылки:\n${broken.join('\n')}`).toEqual([]);
+  });
+
+  // Поведенческий тест — последний, т.к. уводит со страницы.
+  test('10. Клик по "Контакты" открывает страницу контактов', async () => {
+    await po.contactsLink.click();
+    await expect(page).toHaveURL(/\/contacts\.html$/);
+  });
+});
+```
+
+---
+
+## 8. ⚠️ Правка `playwright.config.ts` (нужна всей команде)
+
+**Проблема:** в headless‑режиме Chromium отправляет заголовок `sec-ch-ua` с брендом `"HeadlessChrome"` (и такой же User‑Agent). Сайт cpcimpex.com на такие запросы отвечает **HTTP 200 с пустым телом** — страница пустая, падает любой тест, включая тесты формы консультации. В режиме `--headed` проблемы нет, поэтому её легко не заметить.
+
+Проверено curl’ом: с `User-Agent: ...HeadlessChrome/...` сайт отдаёт 0 байт, с обычным `Chrome/...` — 31 КБ.
+
+**Решение:** подменить оба заголовка в `use`:
+
+```ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests/specs',
+  use: {
+    baseURL: 'https://cpcimpex.com',
+    // Сайт отдаёт пустую страницу headless-браузеру — маскируемся под обычный Chrome
+    userAgent:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+    extraHTTPHeaders: { 'sec-ch-ua': '"Chromium";v="140", "Not:A-Brand";v="8"' },
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+});
+```
+
+> Это касается и Python‑набора из `testing.md`: там то же самое задаётся через фикстуру `browser_context_args` (`user_agent` и `extra_http_headers`).
+
+---
+
+## 9. Запуск
+
+```bash
+npx playwright test cpcimpexFooter.spec.ts
+npx playwright test cpcimpexFooter.spec.ts --headed
+npx playwright show-report
+```
+
+Результат прогона 03.11.2026 (Chromium, headless):
+
+```
+  ok  1 … 8   — passed
+  x   9       — expected fail (BUG-F01: 404 https://cpcimpex.com/https://toppers.cpcimpex.com/)
+  ok 10       — passed
+  10 passed (9.5s)
+```
