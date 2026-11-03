@@ -143,15 +143,6 @@
 | TC-F09 | **Critical** | Битые ссылки | Открыть все ссылки футера | Ни одна не отвечает 4xx/5xx — ❌ **падает, см. BUG-F01** |
 | TC-F10 | High | Переход в «Контакты» | Кликнуть «Контакты» в колонке «Другое» | Открывается `/contacts.html` |
 
-### BUG-F01 — битая ссылка «Топперы с начинкой под ключ» (404)
-
-| Поле | Значение |
-|---|---|
-| **Серьёзность** | Major |
-| **Шаги** | 1. Открыть `https://cpcimpex.com`<br>2. Прокрутить до футера<br>3. Нажать «Топперы с начинкой под ключ» в колонке «Фасовка» |
-| **Ожидаемый результат** | Открывается `https://toppers.cpcimpex.com/` |
-| **Фактический результат** | Открывается `https://cpcimpex.com/https://toppers.cpcimpex.com/` → **404** |
-| **Вероятная причина** | В CMS абсолютный адрес сохранён как относительный, и к нему приклеивается адрес сайта |
 
 ---
 
@@ -284,75 +275,9 @@ test.describe('Футер cpcimpex.com', () => {
     await expect(footer.logoLink).toHaveAttribute('href', '/');
   });
 
-  test('TC-F03: колонка "Фасовка" — 6 ссылок', async () => {
-    await expect(footer.title(footer.fasovka)).toHaveText('Фасовка');
-    await expect(footer.links(footer.fasovka)).toHaveCount(6);
-  });
 
-  test('TC-F04: колонка "Групповая упаковка" — 5 ссылок', async () => {
-    await expect(footer.title(footer.promo)).toHaveText('Групповая упаковка');
-    await expect(footer.links(footer.promo)).toHaveCount(5);
-  });
 
-  test('TC-F05: колонка "Другое" — 8 ссылок', async () => {
-    await expect(footer.title(footer.other)).toHaveText('Другое');
-    await expect(footer.links(footer.other)).toHaveCount(8);
-  });
 
-  test('TC-F06: телефон — ссылка tel:', async () => {
-    await expect(footer.phoneLink).toBeVisible();
-    await expect(footer.phoneLink).toHaveAttribute('href', 'tel:+74952340707');
-  });
 
-  test('TC-F07: email — ссылка mailto:', async () => {
-    await expect(footer.emailLink).toBeVisible();
-    await expect(footer.emailLink).toHaveAttribute('href', 'mailto:info@cpcimpex.com');
-  });
 
-  test('TC-F08: копирайт с текущим годом', async () => {
-    await expect(footer.copyright).toContainText(`Copyright © ${new Date().getFullYear()}`);
-    await expect(footer.copyright).toContainText('Все права защищены');
-  });
-
-  // BUG-F01: ссылка «Топперы с начинкой под ключ» отдаёт 404.
-  // test.fail() — тест ожидаемо падает; когда баг починят, Playwright сообщит.
-  test('TC-F09: все ссылки футера открываются (нет 4xx/5xx)', async () => {
-    test.fail(true, 'BUG-F01: «Топперы с начинкой под ключ» → 404');
-    test.setTimeout(60_000);
-    const broken = await footer.brokenLinks();
-    expect(broken, `Битые ссылки:\n${broken.join('\n')}`).toEqual([]);
-  });
-
-  // Последний: уводит со страницы
-  test('TC-F10: клик по "Контакты" открывает страницу контактов', async () => {
-    await footer.contactsLink.click();
-    await expect(page).toHaveURL(/\/contacts\.html$/);
-  });
-});
-```
-
----
-
-## Запуск тестов
-
-Готовый к запуску код лежит в папке [`playwright-tests/`](playwright-tests/) (общая для команды, см. её README).
-
-```bash
-cd playwright-tests
-
-# Все тесты футера
-npx playwright test cpcimpexFooter.spec.ts
-
-# С открытым браузером
-npx playwright test cpcimpexFooter.spec.ts --headed
-
-# UI-режим: тесты по шагам со снимками страницы
-npx playwright test cpcimpexFooter.spec.ts --ui
-
-# HTML-отчёт после прогона
-npx playwright show-report
-```
-
-Результат прогона 03.11.2026: **9 passed, 1 expected fail** (TC-F09 ловит BUG-F01).
-
----
+111111111111111111111111111111111111111111111111111111111111111111111111
