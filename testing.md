@@ -92,25 +92,6 @@
 
 ## Автотест (Python + Playwright + pytest)
 
-### Структура проекта
-
-```
-PythonWright/
-├── conftest.py
-├── test_cpcimpex.py
-└── requirements.txt
-```
-
----
-
-### `requirements.txt`
-
-```txt
-pytest==8.3.3
-playwright==1.47.0
-pytest-playwright==0.5.1
-```
-
 Установка:
 
 ```bash
