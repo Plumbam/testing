@@ -156,13 +156,10 @@ export class cpcimpexExtensionsPage {
     this.cardboardPromoCard = this.getCardByTitle('Промо наборы в картоне');
     this.platinkaCard = this.getCardByTitle('Вырубка платинки');
 
-    // Алиас для обратной совместимости
     this.joinLink = this.fruitCard;
   }
 
-  /**
-   * Метод для открытия главной страницы с автоматическим принятием cookies
-   */
+
   async goto() {
     // Предварительно устанавливаем cookie согласия, чтобы баннер CookieHub не блокировал интерфейс
     await this.page.context().addCookies([
@@ -178,9 +175,7 @@ export class cpcimpexExtensionsPage {
     await this.acceptCookiesIfPresent();
   }
 
-  /**
-   * Закрытие / принятие всплывающего окна cookies, чтобы оно не перекрывало клики
-   */
+
   async acceptCookiesIfPresent() {
     try {
       if (await this.cookieAllowBtn.isVisible({ timeout: 2500 })) {
@@ -188,42 +183,25 @@ export class cpcimpexExtensionsPage {
         await this.cookieAllowBtn.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
       }
     } catch {
-      // Баннер не появился или уже закрыт
     }
   }
 
-  /**
-   * Получение локатора карточки по заголовку
-   * @param {string} title
-   */
+
   getCardByTitle(title) {
     return this.cartBlock.locator('.cart_item', {
       has: this.page.locator('h3', { hasText: title }),
     });
   }
 
-  /**
-   * Получение href карточки
-   * @param {import('@playwright/test').Locator} cardLocator
-   */
   async getCardHref(cardLocator) {
     return await cardLocator.getAttribute('href');
   }
 
-  /**
-   * Получение target карточки (_blank или null)
-   * @param {import('@playwright/test').Locator} cardLocator
-   */
+
   async getCardTarget(cardLocator) {
     return await cardLocator.getAttribute('target');
   }
 
-  /**
-   * Клик по карточке и ожидание открытия страницы/вкладки
-   * @param {import('@playwright/test').Locator} cardLocator
-   * @param {boolean} isOpenInNewTab
-   * @returns {Promise<{page: import('@playwright/test').Page, isNewPage: boolean}>}
-   */
   async clickAndOpen(cardLocator, isOpenInNewTab = false) {
     await cardLocator.scrollIntoViewIfNeeded();
 
@@ -242,7 +220,6 @@ export class cpcimpexExtensionsPage {
     }
   }
 
-  // Индивидуальные методы клика для каждой карточки
   async clickJoin() { await this.fruitCard.click(); }
   async clickFruit() { return await this.clickAndOpen(this.fruitCard, true); }
   async clickFigurePack() { return await this.clickAndOpen(this.figurePackCard, false); }
