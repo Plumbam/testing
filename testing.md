@@ -335,7 +335,11 @@ test.describe('Футер cpcimpex.com', () => {
 
 ## Запуск тестов
 
+Готовый к запуску код лежит в папке [`playwright-tests/`](playwright-tests/) (общая для команды, см. её README).
+
 ```bash
+cd playwright-tests
+
 # Все тесты футера
 npx playwright test cpcimpexFooter.spec.ts
 

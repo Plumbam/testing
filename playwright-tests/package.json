@@ -1,0 +1,14 @@
+{
+  "name": "cpcimpex-playwright-tests",
+  "private": true,
+  "description": "Автотесты Playwright для сайта cpcimpex.com — командная работа",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}
