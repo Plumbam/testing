@@ -213,6 +213,10 @@ test.describe('Проверка карточек услуг на сайте cpci
         `Карточка "${cardData.title}" не должна иметь target="_blank"`
       ).not.toBe('_blank');
     }
+    
   });
-  
+  test('Проверка корректного заголовка страницы (title)', async ({ page }) => {
+    // Проверяем, что заголовок страницы содержит ожидаемое ключевое слово
+    await expect(page).toHaveTitle(/.*cpcimpex.*/i);
+  });
 });
