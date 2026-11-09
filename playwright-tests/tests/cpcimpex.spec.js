@@ -150,4 +150,69 @@ test.describe('Проверка карточек услуг на сайте cpci
       await popup.close();
     });
   });
+
+    test('Все внешние карточки с target="_blank" имеют безопасный атрибут rel', async () => {
+    const externalCards = CARDS_DATA.filter(
+      (card) => card.isExternal && card.target === '_blank'
+    );
+
+    expect(
+      externalCards.length,
+      'В CARDS_DATA должны быть внешние карточки с target="_blank"'
+    ).toBeGreaterThan(0);
+
+    for (const cardData of externalCards) {
+      const cardLocator = cpcimpexPage.getCardByTitle(cardData.title);
+
+      await expect(
+        cardLocator,
+        `Карточка "${cardData.title}" должна быть видимой`
+      ).toBeVisible();
+
+      const target = await cardLocator.getAttribute('target');
+      expect(
+        target,
+        `Карточка "${cardData.title}" должна открываться в новой вкладке`
+      ).toBe('_blank');
+
+      const rel = await cardLocator.getAttribute('rel');
+      const relTokens = (rel ?? '').toLowerCase().split(/\s+/).filter(Boolean);
+
+      expect(
+        relTokens,
+        `Карточка "${cardData.title}": атрибут rel должен содержать noopener. Получено: ${rel ?? 'null'}`
+      ).toContain('noopener');
+
+      expect(
+        relTokens,
+        `Карточка "${cardData.title}": атрибут rel должен содержать noreferrer. Получено: ${rel ?? 'null'}`
+      ).toContain('noreferrer');
+    }
+  });
+
+  test('Внутренние карточки не должны открываться в новой вкладке', async () => {
+    const internalCards = CARDS_DATA.filter((card) => !card.isExternal);
+
+    expect(
+      internalCards.length,
+      'В CARDS_DATA должны быть внутренние карточки'
+    ).toBeGreaterThan(0);
+
+    for (const cardData of internalCards) {
+      const cardLocator = cpcimpexPage.getCardByTitle(cardData.title);
+
+      await expect(
+        cardLocator,
+        `Карточка "${cardData.title}" должна быть видимой`
+      ).toBeVisible();
+
+      const target = await cardLocator.getAttribute('target');
+
+      expect(
+        target,
+        `Карточка "${cardData.title}" не должна иметь target="_blank"`
+      ).not.toBe('_blank');
+    }
+  });
+  
 });
