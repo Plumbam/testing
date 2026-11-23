@@ -30,4 +30,21 @@ test.describe('Карта знаний: Ящерицы (Page Object Model)', () 
     // Проверяем, что атрибут href содержит домен wikipedia.org (регистронезависимо)
     await expect(lizardPage.wikipediaLink).toHaveAttribute('href', /wikipedia\.org/i);
   });
+
+  test('Тест 4: Проверка наличия основных пунктов меню', async () => {
+    await expect(lizardPage.menuSynonyms).toBeVisible();
+    await expect(lizardPage.menuDefinitions).toBeVisible();
+    await expect(lizardPage.menuAssociations).toBeVisible();
+  });
+
+  test('Тест 5: Проверка перехода в раздел Ассоциации через меню', async ({ page }) => {
+    await lizardPage.menuAssociations.click();
+    await expect(page).toHaveURL(/assotsiatsii-k-slovu/);
+  });
+
+  test('Тест 6: Проверка перехода на страницу Обратная связь', async ({ page }) => {
+    await expect(lizardPage.feedbackLink).toBeVisible();
+    await lizardPage.feedbackLink.click();
+    await expect(page).toHaveURL(/(обратная-связь|%D0%BE%D0%B1%D1%80%D0%B0%D1%82%D0%BD%D0%B0%D1%8F)/i);
+  });
 });
