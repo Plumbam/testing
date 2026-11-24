@@ -48,3 +48,25 @@ test.describe('Карта знаний: Ящерицы (Page Object Model)', () 
     await expect(page).toHaveURL(/(обратная-связь|%D0%BE%D0%B1%D1%80%D0%B0%D1%82%D0%BD%D0%B0%D1%8F)/i);
   });
 });
+ test('Тест 7: Проверка наличия поля поиска', async ({ page }) => {
+    // Ищем поле ввода по типу или плейсхолдеру. 
+    // Замените 'input[type="search"]' на реальный селектор, если он другой (например, '.search-input')
+    const searchInput = page.locator('input[type="text"], input[type="search"]').first();
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill('тест');
+    await expect(searchInput).toHaveValue('тест');
+  });
+
+  test('Тест 8: Проверка наличия изображений ящериц на странице', async ({ page }) => {
+    const images = page.locator('img');
+    await expect(images.first()).toBeVisible();
+    const firstImageAlt = await images.first().getAttribute('alt');
+    expect(firstImageAlt).toBeTruthy();
+  });
+
+  test('Тест 9: Проверка перехода по ссылке "Википедия" (внешний ресурс)', async ({ page }) => {
+    const wikiLink = page.locator('a:has-text("Википедия")').first();
+    await expect(wikiLink).toBeVisible();
+    const href = await wikiLink.getAttribute('href');
+    expect(href).toContain('wikipedia.org');
+  });
